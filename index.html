@@ -1,0 +1,246 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Climate Cooperation Game — World Map</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+ 
+<div class="hero">
+  <span class="tag">Game Theory · Climate Economics · World Map</span>
+  <h1>The Climate Cooperation Game</h1>
+  <p>Watch the world's 12 biggest emitters decide whether to cooperate or defect — on a real world map, against 33 years of real data.</p>
+</div>
+
+<nav class="page-tabs" aria-label="Page sections">
+  <button class="page-tab active" type="button" data-tab="overview">Overview</button>
+  <button class="page-tab" type="button" data-tab="simulation">Simulation</button>
+  <button class="page-tab" type="button" data-tab="reality">Reality check</button>
+  <button class="page-tab" type="button" data-tab="insights">Insights</button>
+</nav>
+ 
+<section class="tab-panel" data-panel="overview">
+  <div class="narrow">
+    <p class="lead">Climate change is the textbook example of a <strong><span class="glossary" tabindex="0" title="A situation where everyone benefits from cooperation, but each player is incentivized to free-ride.">collective action problem</span></strong>. Everyone benefits if emissions fall, but each country individually benefits more if they keep emitting while others cut.</p>
+    <p>This site walks through the theory, lets you run the game across the world's biggest emitters, then compares the outcome to <strong>actual emissions data from 1990 to 2023</strong>.</p>
+  </div>
+</section>
+ 
+<section class="tab-panel" data-panel="overview" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="narrow">
+    <h2>The setup</h2>
+    <p>Each country chooses to <strong>abate</strong> (cut emissions) or <strong>emit</strong> (keep polluting). The payoff structure is the prisoner's dilemma:</p>
+    <div class="matrix">
+      <table>
+        <tr><td class="head-corner"></td><td class="head-corner"></td><th colspan="2">Country B</th></tr>
+        <tr><td class="head-corner"></td><td class="head-corner"></td><th>Abate</th><th>Emit</th></tr>
+        <tr>
+          <th rowspan="2" style="writing-mode: vertical-rl; transform: rotate(180deg); padding: 18px 8px;">Country A</th>
+          <td class="label">Abate</td>
+          <td class="payoff pareto"><span class="good">+3</span>, <span class="good">+3</span></td>
+          <td class="payoff"><span class="bad">-1</span>, <span class="meh">+5</span></td>
+        </tr>
+        <tr>
+          <td class="label">Emit</td>
+          <td class="payoff"><span class="meh">+5</span>, <span class="bad">-1</span></td>
+          <td class="payoff nash"><span class="bad">0</span>, <span class="bad">0</span></td>
+        </tr>
+      </table>
+      <div class="matrix-legend">
+        <span class="nash"><span class="glossary" tabindex="0" title="A stable outcome where no player can improve by changing strategy alone.">Nash equilibrium</span> (rational outcome)</span>
+        <span class="pareto">Pareto optimum (best for everyone)</span>
+      </div>
+    </div>
+    <p>The trap: <strong>both countries are better off if they both abate (3,3) than if they both emit (0,0)</strong>. Yet each individual country always does better by emitting. So both rationally choose to defect — and both end up worse off.</p>
+    <p><strong>Tit-for-tat</strong> means conditional cooperation: a country starts by cooperating, then copies what most other countries did last round. If others abate, it keeps abating. If others defect, it defects back. In the game, it represents trust that can survive only when enough countries keep cooperating.</p>
+  </div>
+</section>
+ 
+<section class="sim-section tab-panel" data-panel="simulation">
+  <div class="container">
+    <h2 style="text-align: center; margin-bottom: 8px;">Run the game on a real world map</h2>
+    <p style="text-align: center; color: var(--text-muted); margin-bottom: 32px;">12 of the world's largest emitters, responsible for ~75% of global CO₂. Pick each country's strategy and watch the planet from 2025 to 2100.</p>
+    
+    <div class="sim-card">
+      <div class="sim-header">
+        <div>
+          <div style="font-size:11px;color:var(--text-faint);margin-bottom:2px">Global temperature rise</div>
+          <div class="temp-display" id="tempDisplay">+1.45°C <span class="delta" id="tempDelta">— starting baseline (2025)</span></div>
+          <div class="threshold-note" id="thresholdNote">No major threshold crossed yet.</div>
+        </div>
+        <div class="ctrl">
+          <span>Year:</span><b id="yearVal">2025</b>
+          <span style="margin-left:8px">Speed:</span>
+          <input type="range" id="speed" min="100" max="800" step="100" value="400">
+        </div>
+      </div>
+      
+      <div class="map-wrap" id="mapWrap">
+        <div class="map-loading" id="mapLoading">Loading world map…</div>
+        <svg id="worldMap" viewBox="0 0 960 480" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="heat-overlay" id="heatOverlay" style="--heat: 0;"></div>
+        <div class="year-label" id="mapYear">2025</div>
+      </div>
+      
+      <div class="map-legend">
+        <span><i style="background:#1D9E75"></i>Abating (cooperating)</span>
+        <span><i style="background:#E24B4A"></i>Emitting (defecting)</span>
+        <span><i style="background:#BA7517"></i>Tit-for-tat</span>
+        <span><i style="background:var(--land)"></i>Other countries (held constant)</span>
+      </div>
+      
+      <div class="stats">
+        <div class="stat"><div class="stat-val" id="globalEmissions">42</div><div class="stat-lbl">Global GtCO₂/yr</div></div>
+        <div class="stat"><div class="stat-val" id="atmCO2">421</div><div class="stat-lbl">Atmosphere ppm</div></div>
+        <div class="stat"><div class="stat-val" id="totalGDP">100</div><div class="stat-lbl">World GDP index</div></div>
+        <div class="stat"><div class="stat-val" id="cooperators">0/12</div><div class="stat-lbl">Abating</div></div>
+        <div class="stat"><div class="stat-val" id="climateDamage">0%</div><div class="stat-lbl">Damage</div></div>
+      </div>
+      
+      <div class="focus-card">
+        <label for="focusCountry">Pick your country:</label>
+        <select id="focusCountry" aria-label="Pick your country focus"></select>
+        <div id="focusSummary">Country focus: none selected.</div>
+      </div>
+
+      <div class="policy-card">
+        <h3>Policy levers</h3>
+        <p>Change the incentives and test whether the game can escape defection.</p>
+        <div class="policy-grid">
+          <label>Carbon tax strength <input type="range" id="leverTax" min="0" max="100" step="5" value="20"></label>
+          <label>Green tech cost decline <input type="range" id="leverTech" min="0" max="100" step="5" value="35"></label>
+          <label>Climate club tariff <input type="range" id="leverTariff" min="0" max="100" step="5" value="10"></label>
+          <label>Adaptation spending <input type="range" id="leverAdapt" min="0" max="100" step="5" value="15"></label>
+        </div>
+        <div class="policy-readout" id="policyReadout"></div>
+      </div>
+      
+      <div class="scenario-card">
+        <h3>Scenario presets</h3>
+        <div class="preset-buttons">
+          <button class="btn" type="button" onclick="applyPreset('paris')">Paris aligned</button>
+          <button class="btn" type="button" onclick="applyPreset('bau')">Business as usual</button>
+          <button class="btn" type="button" onclick="applyPreset('club')">Climate club</button>
+          <button class="btn" type="button" onclick="applyPreset('rivalry')">US-China rivalry</button>
+        </div>
+        <div class="compare-panels">
+          <div class="compare-box"><strong>Current run:</strong><div id="currentRun">Not finished yet.</div></div>
+          <div class="compare-box"><strong>Previous run:</strong><div id="previousRun">No previous run.</div></div>
+        </div>
+      </div>
+      
+      <div class="countries" id="countryGrid"></div>
+      
+      <div class="controls">
+        <button class="btn primary" onclick="toggleSim()" id="simBtn">Start</button>
+        <button class="btn" onclick="resetSim()">Reset</button>
+        <button class="btn" onclick="setAll('abate')">All abate</button>
+        <button class="btn" onclick="setAll('emit')">All emit</button>
+        <button class="btn" onclick="setAll('tit-for-tat')">All tit-for-tat</button>
+        <button class="btn" onclick="loadHistorical()">Load historical (1990 strategies)</button>
+        <button class="btn" type="button" onclick="copyShareLink()">Copy share link</button>
+      </div>
+      
+      <div class="log" id="logBox">2025: Choose each country's strategy and press Start. Or click "Load historical" to use what countries actually played from 1990–2023.</div>
+      <div class="verdict" id="verdict"></div>
+    </div>
+  </div>
+</section>
+ 
+<section class="tab-panel" data-panel="reality">
+  <div class="container">
+    <h2>The reality check: 1990–2023</h2>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">Game theory makes predictions. So how did the real world actually play out?</p>
+    
+    <div class="backtest-card">
+      <div class="backtest-tabs">
+        <button class="backtest-tab active" onclick="switchChart('emissions')">Emissions by country</button>
+        <button class="backtest-tab" onclick="switchChart('temperature')">Temperature</button>
+        <button class="backtest-tab" onclick="switchChart('co2')">Atmospheric CO₂</button>
+        <button class="backtest-tab" onclick="switchChart('compare')">Theory vs reality</button>
+      </div>
+      <label class="uncertainty-toggle"><input type="checkbox" id="uncertaintyToggle"> Show uncertainty bands</label>
+      <div class="chart-wrap"><canvas id="historyCanvas" style="width:100%; height:100%; display:block;"></canvas></div>
+      <div class="chart-legend" id="chartLegend"></div>
+      <div id="chartCommentary" style="font-size: 14px; color: var(--text-muted); padding: 12px 0;"></div>
+    </div>
+    
+    <h3>Which strategy did each country actually play?</h3>
+    <table class="verdict-table">
+      <thead>
+        <tr><th>Country</th><th>1990 (Mt)</th><th>2023 (Mt)</th><th>Change</th><th>Revealed strategy</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>United States</td><td class="right">5,085</td><td class="right">4,682</td><td class="right">−7.9%</td><td><span class="badge mixed">Mostly emit, late tit-for-tat</span></td></tr>
+        <tr><td>China</td><td class="right">2,484</td><td class="right">12,172</td><td class="right" style="color: #E24B4A;">+390%</td><td><span class="badge defect">Emit (defect)</span></td></tr>
+        <tr><td>EU 27</td><td class="right">3,760</td><td class="right">2,470</td><td class="right" style="color: #1D9E75;">−34%</td><td><span class="badge cooperate">Abate (cooperate)</span></td></tr>
+        <tr><td>India</td><td class="right">600</td><td class="right">2,807</td><td class="right" style="color: #E24B4A;">+367%</td><td><span class="badge defect">Emit (defect)</span></td></tr>
+        <tr><td>Russia</td><td class="right">2,400</td><td class="right">1,790</td><td class="right">−25%</td><td><span class="badge mixed">Abate by accident (post-Soviet)</span></td></tr>
+        <tr><td>Japan</td><td class="right">1,160</td><td class="right">990</td><td class="right">−15%</td><td><span class="badge cooperate">Mild abate</span></td></tr>
+      </tbody>
+    </table>
+    
+    <h3>What does the data tell us?</h3>
+    <p><strong>Pure cooperators are rare.</strong> Only the EU acted like a sustained "abater" — and it's the bloc with the strongest internal enforcement (carbon markets, binding directives). Cooperation needs institutions to lock it in.</p>
+    <p><strong>The free-rider strategy paid off short-term.</strong> China and India's emit trajectories coincided with massive economic growth. The defector captures the +5 payoff while others sacrifice.</p>
+    <p><strong>The collective outcome was bad.</strong> Despite 33 years of negotiations, atmospheric CO₂ rose from 354 to 421 ppm and global temperature climbed about 1°C. The Nash equilibrium dragged the world toward the lose-lose outcome the model warned about.</p>
+  </div>
+</section>
+ 
+<section class="tab-panel" data-panel="insights" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="narrow">
+    <h2>Where the model gets it right — and wrong</h2>
+    <h3>Right</h3>
+    <p>Defection beating cooperation in one-shot decisions, and drift toward the bad equilibrium without enforcement, is exactly what 33 years of climate negotiations show. The EU's success under binding rules vs. the universal failure of voluntary regimes (Kyoto, Copenhagen) is straight out of the textbook.</p>
+    <h3>Wrong / oversimplified</h3>
+    <p><strong>Real countries don't pick one strategy.</strong> They drift, switch on elections, react to oil prices.</p>
+    <p><strong>Emissions per capita matters morally even if game theory ignores it.</strong> India's emissions grew because hundreds of millions of people gained electricity.</p>
+    <p><strong>Technology changed the payoff matrix.</strong> Solar got 90% cheaper between 2010 and 2023. When abating becomes <em>cheaper</em> than emitting, the dilemma dissolves — that's the actual escape hatch.</p>
+    <details class="assumptions">
+      <summary>Model assumptions and simplifications</summary>
+      <ul>
+        <li>12 major emitters are modeled explicitly; rest of world is held constant.</li>
+        <li>Policy effects are stylized and deterministic for clarity.</li>
+        <li>Temperature and damage relationships are reduced-form, not an IAM.</li>
+        <li>Historical charts use real data series; forward paths are educational projections.</li>
+      </ul>
+    </details>
+  </div>
+</section>
+
+<section class="tab-panel" data-panel="insights">
+  <div class="narrow">
+    <h2>Methodology</h2>
+    <p>The simulation combines real baseline values with simplified transition rules so users can inspect strategic dynamics quickly. It is designed for intuition and classroom clarity rather than forecast precision.</p>
+    <p><strong>Data:</strong> emissions baselines from Global Carbon Project, atmospheric CO₂ from NOAA Mauna Loa, and warming trend from HadCRUT5/Met Office.</p>
+    <p><strong>Limits:</strong> no sector disaggregation, no uncertainty propagation by default, and no endogenous policy negotiation mechanism.</p>
+  </div>
+</section>
+ 
+<section class="tab-panel" data-panel="insights">
+  <div class="narrow">
+    <h2>Experiments to try</h2>
+    <div class="experiments">
+      <div class="exp"><span class="exp-num">1</span><h4>The defection spiral</h4><p>Set everyone to <strong>Emit</strong>. Watch the map turn red and temperature blow past +3°C.</p></div>
+      <div class="exp"><span class="exp-num">2</span><h4>The cooperative ideal</h4><p>Set everyone to <strong>Abate</strong>. The map goes green. Pareto-optimal — but unstable without enforcement.</p></div>
+      <div class="exp"><span class="exp-num">3</span><h4>The historical setup</h4><p>Click "Load historical" to use the strategies countries actually played 1990–2023.</p></div>
+      <div class="exp"><span class="exp-num">4</span><h4>Conditional trust</h4><p>All twelve on <strong>Tit-for-tat</strong>. Conditional cooperation can hold — if started right.</p></div>
+      <div class="exp"><span class="exp-num">5</span><h4>One defector</h4><p>Eleven cooperators, one defector. Watch how a single bad actor can unravel the agreement.</p></div>
+      <div class="exp"><span class="exp-num">6</span><h4>Big three coalition</h4><p>Set US, China, EU to abate; everyone else to emit. Does covering 50% of emissions change the outcome?</p></div>
+    </div>
+  </div>
+</section>
+ 
+<footer>
+  <p>Map data: Natural Earth via the topojson world-atlas. Emissions data: Global Carbon Project. Atmospheric CO₂: NOAA Mauna Loa. Temperature: HadCRUT5 / Met Office.</p>
+  <p>Numbers in the historical comparison are real. Numbers in the forward simulation are simplified for clarity.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
